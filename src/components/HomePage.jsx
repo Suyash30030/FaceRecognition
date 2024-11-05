@@ -29,7 +29,7 @@ const HomePage = () => {
   return (
     <div className="bg-gray-100">
       {/* Hero Section */}
-      <section className="py-20 bg-white">
+      <section className="py-32 bg-white">
         <h1 className="text-4xl font-bold mb-6 text-purple-800 text-center">Anti Car Theft Using Face Recognition - Implemented Using Raspberry Pi</h1>
         <p className="text-xl text-gray-700 mb-8 px-4 md:px-12 lg:px-24">
           The "Anti Car Theft Using Face Recognition" project represents a significant advancement in vehicle security technology. By combining face recognition capabilities with the compact and efficient Raspberry Pi, this solution not only helps in preventing car theft incidents but also provides a seamless user experience for authorized individuals. This project stands as a testament to the potential of integrating artificial intelligence and IoT in everyday applications, making transportation safer and more secure.
