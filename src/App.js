@@ -4,7 +4,8 @@ import Navbar from './components/Navbar';
 import Home from './components/HomePage';
 import Register from './pages/Register';
 import FaceVerification from './pages/FaceVerification';
-// import Documentation from './pages/Documentation';
+import Documentation from './pages/Documentation';
+import Footer from './components/Footer';
 
 function App() {
   return (
@@ -15,8 +16,9 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/face-verify" element={<FaceVerification />} />
-          {/* <Route path="/docs" element={<Documentation />} /> */}
+          <Route path="/docs" element={<Documentation />} />
         </Routes>
+        <Footer />
       </div>
     </Router>
   );

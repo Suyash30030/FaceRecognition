@@ -1,355 +1,209 @@
-import { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Webcam from 'react-webcam';
+import * as tf from '@tensorflow/tfjs';
+import * as blazeface from '@tensorflow-models/blazeface';
 
-const FaceRecognition = () => {
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [isReady, setIsReady] = useState(false);
-  const [storedFaceData, setStoredFaceData] = useState(null);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [error, setError] = useState(null);
+const FaceVerification = () => {
+  const webcamRef = useRef(null);
+  const [model, setModel] = useState(null);
   const [status, setStatus] = useState({ type: 'info', message: 'Initializing...' });
-  const [retryCount, setRetryCount] = useState(0);
-  const maxRetries = 3;
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [comparisonImage, setComparisonImage] = useState(null);
+  const [isFaceMatch, setIsFaceMatch] = useState(false);
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
+  const [confidence, setConfidence] = useState(0);
 
-  const faceDetectionRef = useRef(null);
-  const cameraRef = useRef(null);
-  const resultsRef = useRef(null);
-
-  // Draw results function
-  const drawResults = (results) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    if (results.detections) {
-      for (const detection of results.detections) {
-        const bbox = detection.boundingBox;
-        ctx.strokeStyle = '#00FF00';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(
-          bbox.xCenter * canvas.width - (bbox.width * canvas.width) / 2,
-          bbox.yCenter * canvas.height - (bbox.height * canvas.height) / 2,
-          bbox.width * canvas.width,
-          bbox.height * canvas.height
-        );
-      }
-    }
-  };
-
-  // MediaPipe loading function
-  const loadMediaPipe = async () => {
-    try {
-      const faceDetectionScript = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@latest/face_detection.js';
-      const cameraUtilsScript = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@latest/camera_utils.js';
-
-      // Load scripts dynamically
-      await Promise.all([
-        loadScript(faceDetectionScript),
-        loadScript(cameraUtilsScript)
-      ]);
-
-      // Now we can safely use the global FaceDetection and Camera objects
-      const FaceDetection = window.FaceDetection;
-      const Camera = window.Camera;
-
-      if (!FaceDetection || !Camera) {
-        throw new Error('MediaPipe libraries not loaded properly');
-      }
-
-      return { FaceDetection, Camera };
-    } catch (error) {
-      console.error('Failed to load MediaPipe:', error);
-      throw new Error('Failed to load face detection libraries');
-    }
-  };
-
-  // Helper function to load scripts
-  const loadScript = (src) => {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = src;
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
+  // Load the BlazeFace model
+  const loadFaceLandmarksModel = async () => {
+    const loadedModel = await blazeface.load();
+    setModel(loadedModel);
+    console.log('Model loaded');
+    setStatus({ type: 'success', message: 'Model loaded' });
   };
 
   useEffect(() => {
-    let mounted = true;
-    let cleanup = () => {};
+    loadFaceLandmarksModel();
+  }, []);
 
-    const initializeFaceDetection = async () => {
-      try {
-        setStatus({ type: 'info', message: 'Loading face detection...' });
-        
-        const { FaceDetection, Camera } = await loadMediaPipe();
-        
-        if (!mounted) return;
+  const detectFaces = async (image) => {
+    if (model) {
+      const predictions = await model.estimateFaces(image, false);
+      return predictions;
+    }
+    return [];
+  };
 
-        // Initialize Face Detection
-        const faceDetection = new FaceDetection({
-          locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@latest/${file}`;
-          }
-        });
+  const compareImages = async () => {
+    const capturedImageData = localStorage.getItem('capturedImage');
+    if (capturedImageData) {
+      setComparisonImage(capturedImageData);
+      const capturedImage = new Image();
+      capturedImage.src = capturedImageData;
+      await capturedImage.decode();
 
-        const initPromise = faceDetection.initialize();
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Face detection initialization timeout')), 10000);
-        });
+      const liveImage = new Image();
+      liveImage.src = webcamRef.current.getScreenshot();
+      await liveImage.decode();
 
-        await Promise.race([initPromise, timeoutPromise]);
+      const capturedFaces = await detectFaces(capturedImage);
+      const liveFaces = await detectFaces(liveImage);
 
-        faceDetection.setOptions({
-          modelSelection: 0,
-          minDetectionConfidence: 0.5
-        });
+      if (capturedFaces.length > 0 && liveFaces.length > 0) {
+        // Compare the largest face from the captured image with the largest face from the live feed
+        const capturedFace = capturedFaces[0];
+        const liveFace = liveFaces[0];
 
-        faceDetection.onResults((results) => {
-          if (mounted) {
-            resultsRef.current = results;
-            if (results.detections?.length > 0) {
-              drawResults(results);
-            }
-          }
-        });
+        const capturedFaceBox = capturedFace.topLeft.concat(capturedFace.bottomRight);
+        const liveFaceBox = liveFace.topLeft.concat(liveFace.bottomRight);
 
-        faceDetectionRef.current = faceDetection;
-
-        if (videoRef.current) {
-          try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-              video: {
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                facingMode: 'user'
-              }
-            });
-
-            videoRef.current.srcObject = stream;
-            await videoRef.current.play();
-
-            const camera = new Camera(videoRef.current, {
-              onFrame: async () => {
-                try {
-                  if (faceDetectionRef.current && videoRef.current && mounted) {
-                    await faceDetectionRef.current.send({ image: videoRef.current });
-                  }
-                } catch (error) {
-                  if (!error.message.includes('Aborted') && mounted) {
-                    console.error('Frame processing error:', error);
-                  }
-                }
-              },
-              width: 1280,
-              height: 720
-            });
-
-            await camera.start();
-            cameraRef.current = camera;
-
-            cleanup = () => {
-              camera.stop();
-              stream.getTracks().forEach(track => track.stop());
-            };
-
-            if (mounted) {
-              setIsReady(true);
-              setStatus({ type: 'success', message: 'Ready! Click "Store Face" to begin.' });
-            }
-          } catch (error) {
-            throw new Error(`Camera setup failed: ${error.message}`);
-          }
+        const iou = calculateIoU(capturedFaceBox, liveFaceBox);
+        const confidence = iou * 100;
+        setConfidence(confidence);
+        if (confidence > 50) { // Adjust the threshold as needed
+          setStatus({ type: 'success', message: 'Faces match!' });
+          setIsFaceMatch(true);
+        } else {
+          setStatus({ type: 'error', message: 'Faces do not match.' });
+          setIsFaceMatch(false);
         }
-      } catch (error) {
-        console.error('Initialization error:', error);
-        
-        if (mounted) {
-          if (retryCount < maxRetries) {
-            setRetryCount(prev => prev + 1);
-            setStatus({ 
-              type: 'warning', 
-              message: `Retrying initialization (${retryCount + 1}/${maxRetries})...` 
-            });
-            setTimeout(initializeFaceDetection, 2000);
-          } else {
-            setStatus({ 
-              type: 'error', 
-              message: `Initialization failed: ${error.message}. Please check your camera and browser permissions.` 
-            });
-            setError(error);
-          }
-        }
+        setShowComparisonModal(true);
+      } else {
+        setStatus({ type: 'info', message: 'No faces detected.' });
+        setIsFaceMatch(false);
       }
-    };
-
-    initializeFaceDetection();
-
-    return () => {
-      mounted = false;
-      cleanup();
-    };
-  }, [retryCount]);
-
-  const storeFace = async () => {
-    try {
-      setStatus({ type: 'info', message: 'Detecting face...' });
-
-      const getDetectionResults = () => {
-        return new Promise((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            reject(new Error('Face detection timeout'));
-          }, 5000);
-
-          const checkResults = () => {
-            if (resultsRef.current?.detections?.length > 0) {
-              clearTimeout(timeout);
-              resolve(resultsRef.current.detections[0]);
-            } else if (resultsRef.current?.detections?.length === 0) {
-              clearTimeout(timeout);
-              reject(new Error('No face detected'));
-            } else {
-              setTimeout(checkResults, 100);
-            }
-          };
-
-          checkResults();
-        });
-      };
-
-      const faceData = await getDetectionResults();
-      setStoredFaceData(faceData);
-      setStatus({ 
-        type: 'success', 
-        message: 'Face stored successfully! Click "Start Verification" to begin matching.' 
-      });
-
-    } catch (error) {
-      setStatus({ 
-        type: 'error', 
-        message: error.message || 'Failed to store face. Please try again.' 
-      });
+    } else {
+      setStatus({ type: 'info', message: 'No captured image available.' });
+      setIsFaceMatch(false);
     }
   };
 
-  const handleRetry = () => {
-    setRetryCount(0);
-    setError(null);
-    setStatus({ type: 'info', message: 'Retrying initialization...' });
+  const captureImage = async () => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    setCapturedImage(imageSrc);
+    localStorage.setItem('capturedImage', imageSrc);
+    setStatus({ type: 'success', message: 'Image captured.' });
   };
 
-  const toggleVerification = () => {
-    if (!storedFaceData) {
-      setStatus({ type: 'error', message: 'Please store a face first.' });
-      return;
-    }
+  const closeComparisonModal = () => {
+    setShowComparisonModal(false);
+  };
 
-    setIsVerifying(!isVerifying);
-    setStatus({ 
-      type: 'info', 
-      message: isVerifying ? 'Verification stopped.' : 'Starting verification...' 
-    });
+  const calculateIoU = (box1, box2) => {
+    const [x1, y1, x2, y2] = box1;
+    const [x3, y3, x4, y4] = box2;
+
+    const interLeft = Math.max(x1, x3);
+    const interTop = Math.max(y1, y3);
+    const interRight = Math.min(x2, x4);
+    const interBottom = Math.min(y2, y4);
+
+    const interArea = Math.max(0, interRight - interLeft) * Math.max(0, interBottom - interTop);
+    const box1Area = (x2 - x1) * (y2 - y1);
+    const box2Area = (x4 - x3) * (y4 - y3);
+    const unionArea = box1Area + box2Area - interArea;
+
+    return interArea / unionArea;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 p-4">
-      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 p-4 flex justify-center items-center">
+      <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-3xl">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Face Recognition</h1>
-          <p className="text-gray-600 mt-2">Secure face detection and verification</p>
+          <h1 className="text-3xl font-bold text-gray-800">Face Verification</h1>
         </div>
 
-        <div
-          className={`p-4 rounded-lg border ${
-            status.type === 'error'
-              ? 'bg-red-100 border-red-500 text-red-700'
-              : status.type === 'success'
-                ? 'bg-green-100 border-green-500 text-green-700'
-                : status.type === 'warning'
-                  ? 'bg-yellow-100 border-yellow-500 text-yellow-700'
-                  : 'bg-blue-100 border-blue-500 text-blue-700'
-          } flex items-center gap-3`}
-        >
-          <span className="text-sm font-medium">{status.message}</span>
+        <div className="bg-gray-100 p-4 rounded-lg mb-6">
+          <p className="text-gray-700 font-medium mb-2">Status:</p>
+          <div
+            className={`p-2 rounded-lg ${
+              status.type === 'error'
+                ? 'bg-red-100 border border-red-500 text-red-700'
+                : status.type === 'success'
+                ? 'bg-green-100 border border-green-500 text-green-700'
+                : 'bg-blue-100 border border-blue-500 text-blue-700'
+            }`}
+          >
+            {status.message}
+          </div>
         </div>
 
-        <div className="relative aspect-video rounded-lg overflow-hidden bg-black mb-6 mt-6">
-          <video
-            ref={videoRef}
+        <div className="relative aspect-video rounded-lg overflow-hidden bg-black mb-6">
+          <Webcam
+            ref={webcamRef}
             className="w-full h-full object-cover"
-            playsInline
+            audio={false}
+            screenshotFormat="image/jpeg"
           />
-          <canvas
-            ref={canvasRef}
-            className="absolute inset-0 w-full h-full"
-            width={1280}
-            height={720}
-          />
-          
-          {!isReady && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <div className="text-white text-xl flex items-center gap-2">
-                <svg className="w-6 h-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                Initializing camera...
+        </div>
+
+        <div className="flex justify-between mb-6">
+          <button
+            onClick={captureImage}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Capture Image
+          </button>
+          <button
+            onClick={compareImages}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Compare
+          </button>
+        </div>
+
+        {showComparisonModal && (
+          <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-3xl">
+              <div className="flex justify-center space-x-4">
+                <div className="relative">
+                  <img
+                    src={capturedImage}
+                    alt="Captured"
+                    className={`w-full max-w-md rounded-xl ${
+                      isFaceMatch
+                        ? 'border-4 border-green-500 hover:border-green-700'
+                        : 'border-4 border-red-500 hover:border-red-700'
+                    }`}
+                  />
+                  <div
+                    className={`absolute top-2 left-2 bg-white px-2 py-1 rounded-lg ${
+                      isFaceMatch ? 'bg-green-500 text-black' : 'bg-red-500 text-white'
+                    }`}
+                  >
+                    {isFaceMatch ? 'Match' : 'No Match'}
+                  </div>
+                </div>
+                <div className="relative">
+                  <img
+                    src={webcamRef.current.getScreenshot()}
+                    alt="Live Feed"
+                    className="w-full max-w-md rounded-xl"
+                  />
+                  <div
+                    className={`absolute top-2 left-2 bg-white px-2 py-1 rounded-lg ${
+                      isFaceMatch ? 'bg-green-500 text-black' : 'bg-red-500 text-white'
+                    }`}
+                  >
+                    {confidence.toFixed(2)}% Confidence
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={closeComparisonModal}
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  Close
+                </button>
               </div>
             </div>
-          )}
-        </div>
-
-        <div className="flex justify-center gap-4 mb-6">
-          <button
-            onClick={storeFace}
-            disabled={!isReady}
-            className={`px-6 py-2 rounded-lg font-semibold text-white ${
-              !isReady
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-          >
-            Store Face
-          </button>
-          <button
-            onClick={toggleVerification}
-            disabled={!isReady || !storedFaceData}
-            className={`px-6 py-2 rounded-lg font-semibold text-white ${
-              !isReady || !storedFaceData
-                ? 'bg-gray-400 cursor-not-allowed'
-                : isVerifying
-                  ? 'bg-red-600 hover:bg-red-700'
-                  : 'bg-green-600 hover:bg-green-700'
-            }`}
-          >
-            {isVerifying ? 'Stop Verification' : 'Start Verification'}
-          </button>
-          <button
-            onClick={handleRetry}
-            disabled={!error && isReady}
-            className={`px-6 py-2 rounded-lg font-semibold text-white ${
-              !error && isReady
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-          >
-            Retry Connection
-          </button>
-        </div>
-
-        <div className="bg-gray-50 rounded-lg p-4">
-          <h3 className="font-semibold text-gray-700 mb-2">Troubleshooting:</h3>
-          <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-            <li>Ensure your camera is connected and working</li>
-            <li>Grant camera permissions when prompted</li>
-            <li>Try using a different browser (Chrome recommended)</li>
-            <li>Check your internet connection</li>
-          </ul>
-        </div>
+          </div>
+        )}
       </div>
+
     </div>
+    
   );
 };
 
-export default FaceRecognition;
+export default FaceVerification;

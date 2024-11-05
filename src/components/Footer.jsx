@@ -1,33 +1,34 @@
-
-// src/components/Footer.js
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-800 text-white py-8">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <h3 className="text-xl font-bold mb-4">Face Recognition App</h3>
-            <p>Advanced face detection and matching using TensorFlow.js</p>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold mb-4">Contact</h3>
-            <p>Email: contact@example.com</p>
-            <p>Phone: (555) 123-4567</p>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold mb-4">Follow Us</h3>
-            <div className="space-x-4">
-              <a href="#" className="hover:text-gray-300">Twitter</a>
-              <a href="#" className="hover:text-gray-300">LinkedIn</a>
-              <a href="#" className="hover:text-gray-300">GitHub</a>
-            </div>
-          </div>
+    <footer className="bg-gray-800 text-white py-4 flex flex-col">
+      <div className="container mx-auto px-4 flex justify-between items-center">
+        <div>
+          <h3 className="text-xl font-bold mb-2">Face Recognition App</h3>
+          <p className="text-gray-400">Face detection and matching using TensorFlow.js</p>
         </div>
-        <div className="mt-8 text-center">
-          <p>&copy; 2024 Face Recognition App. All rights reserved.</p>
+        <div>
+          <h3 className="text-lg font-bold mb-2 px-4">Links</h3>
+          <ul className="space-y-1">
+            <li>
+              <Link to="/" className="text-gray-400 hover:text-white no-underline">Home</Link>
+            </li>
+            <li>
+              <Link to="/register" className="text-gray-400 hover:text-white no-underline">Register</Link>
+            </li>
+            <li>
+              <Link to="/face-verify" className="text-gray-400 hover:text-white no-underline">Face Verification</Link>
+            </li>
+            <li>
+              <Link to="/docs" className="text-gray-400 hover:text-white no-underline">Documentation</Link>
+            </li>
+          </ul>
         </div>
+      </div>
+      <div className="mt-4 text-center">
+        <p className="text-sm">&copy; 2024 Face Recognition App. All rights reserved.</p>
       </div>
     </footer>
   );

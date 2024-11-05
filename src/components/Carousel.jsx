@@ -1,35 +1,22 @@
+import React from 'react';
+import { Carousel } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-// src/components/InfiniteCarousel.js
-import { useState, useEffect } from 'react';
-
-const Carousel = ({ images }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex((prevIndex) => 
-        prevIndex === images.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [images.length]);
-
+const ImageCarousel = ({ images }) => {
   return (
-    <div className="relative overflow-hidden h-96">
-      <div 
-        className="flex transition-transform duration-500 ease-in-out"
-        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-      >
-        {images.map((image, index) => (
+    <Carousel>
+      {images.map((image, index) => (
+        <Carousel.Item key={index} interval={3000}>
           <img
-            key={index}
+            className="d-block w-100 bg-gray-700 p-6 rounded-sm"
             src={image}
             alt={`Screenshot ${index + 1}`}
-            className="w-full h-96 object-cover flex-shrink-0"
+            style={{ height: '500px', objectFit: 'contain',width:'100%' }}
           />
-        ))}
-      </div>
-    </div>
+        </Carousel.Item>
+      ))}
+    </Carousel>
   );
 }
-export default Carousel;
+
+export default ImageCarousel;
