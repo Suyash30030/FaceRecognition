@@ -1,14 +1,15 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY, 
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN, 
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID, 
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET, 
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID, 
-  appId: process.env.REACT_APP_FIREBASE_APP_ID, 
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
@@ -24,6 +25,7 @@ const AuthForm = () => {
   const [status, setStatus] = useState({ type: '', message: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(true);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,6 +40,7 @@ const AuthForm = () => {
           type: 'success',
           message: 'Account created successfully!'
         });
+        navigate('/');
       } else {
         // Try to login the user
         await signInWithEmailAndPassword(auth, formData.email, formData.password);
@@ -45,6 +48,7 @@ const AuthForm = () => {
           type: 'success',
           message: 'Logged in successfully!'
         });
+        navigate('/');
       }
     } catch (error) {
       setStatus({
