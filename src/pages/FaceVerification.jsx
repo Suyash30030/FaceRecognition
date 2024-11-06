@@ -106,7 +106,7 @@ const FaceVerification = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 p-4 flex justify-center items-center mt-14">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 p-4 flex justify-center items-center">
       <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-3xl">
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Face Verification</h1>

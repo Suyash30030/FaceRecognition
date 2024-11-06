@@ -10,14 +10,16 @@ import Footer from './components/Footer';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-black text-white">
+      <div className="flex flex-col min-h-screen bg-black text-white">
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/face-verify" element={<FaceVerification />} />
-          <Route path="/docs" element={<Documentation />} />
-        </Routes>
+        <main className="flex-grow pt-16"> {/* Add padding-top here */}
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/face-verify" element={<FaceVerification />} />
+            <Route path="/docs" element={<Documentation />} />
+          </Routes>
+        </main>
         <Footer />
       </div>
     </Router>
