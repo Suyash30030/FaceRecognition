@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 flex justify-between items-center">
         <div>
           <h3 className="text-xl font-bold mb-2">Face Recognition App</h3>
-          <p className="text-gray-400">Face detection and matching using TensorFlow.js</p>
+          <p className="text-gray-400">Face Recognition using TensorFlow.js and BlazeFace for real-time face detection.</p>
         </div>
         <div>
           <h3 className="text-lg font-bold mb-2 px-4">Links</h3>
@@ -29,6 +29,7 @@ const Footer = () => {
       </div>
       <div className="mt-4 text-center">
         <p className="text-sm">&copy; 2024 Face Recognition App. All rights reserved.</p>
+        <p>Made with ❤️ by Suyash!</p>
       </div>
     </footer>
   );
