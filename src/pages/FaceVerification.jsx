@@ -167,7 +167,7 @@ const FaceVerification = () => {
                   />
                   <div
                     className={`absolute top-2 left-2 bg-white px-2 py-1 rounded-lg ${
-                      isFaceMatch ? 'bg-green-500 text-black' : 'bg-red-500 text-white'
+                      isFaceMatch ? 'bg-green-500 text-black' : 'bg-red-500 text-black'
                     }`}
                   >
                     {isFaceMatch ? 'Match' : 'No Match'}
@@ -181,7 +181,7 @@ const FaceVerification = () => {
                   />
                   <div
                     className={`absolute top-2 left-2 bg-white px-2 py-1 rounded-lg ${
-                      isFaceMatch ? 'bg-green-500 text-black' : 'bg-red-500 text-white'
+                      isFaceMatch ? 'bg-green-500 text-black' : 'bg-red-500 text-black'
                     }`}
                   >
                     {confidence.toFixed(2)}% Confidence
