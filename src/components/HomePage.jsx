@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlarmCheck, Shield, CarFront, Brain, Code } from 'lucide-react';
+import { Shield, CarFront, Code } from 'lucide-react';
 import InfiniteCarousel from './Carousel';
 import image1 from '../assets/images/1.jpg';
 import image2 from '../assets/images/2.jpg';
@@ -26,11 +26,6 @@ const HomePage = () => {
       icon: Shield,
       title: 'Advanced Security',
       description: 'Cutting-edge face recognition technology to prevent unauthorized vehicle access.'
-    },
-    {
-      icon: Brain,
-      title: 'AI-Powered',
-      description: 'Machine learning algorithms for precise and adaptive authentication.'
     },
     {
       icon: CarFront,
@@ -61,7 +56,7 @@ const HomePage = () => {
           </p>
           <div className="flex justify-center space-x-4">
             <a 
-              href="/face-verify" 
+              href="/face-recognition" 
               className="
                 inline-block bg-yellow-400 text-purple-900 
                 font-semibold py-3 px-6 rounded-full 
@@ -70,10 +65,10 @@ const HomePage = () => {
                 no-underline flex items-center
               "
             >
-              Verify Now <AlarmCheck className="ml-2" />
+              Face Recognition <Shield className="ml-2" />
             </a>
             <a 
-              href="/project-details" 
+              href="/documentation" 
               className="
                 inline-block border-2 border-white 
                 text-white font-semibold py-3 px-6 
@@ -82,7 +77,7 @@ const HomePage = () => {
                 no-underline flex items-center
               "
             >
-              Learn More
+              Documentation
             </a>
           </div>
         </div>
@@ -94,7 +89,7 @@ const HomePage = () => {
           <h2 className="text-3xl font-bold mb-12 text-center text-purple-800">
             Project Features
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
               <FeatureCard key={index} {...feature} />
             ))}
