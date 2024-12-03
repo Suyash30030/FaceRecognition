@@ -38,18 +38,18 @@ const HomePage = () => {
   const features = [
     {
       icon: Lock,
-      title: 'Comprehensive Protection',
-      description: 'Multi-layered security approach combining advanced technologies to safeguard your vehicle.'
+      title: 'TensorFlow Face Recognition',
+      description: 'Advanced face recognition powered by TensorFlow, enabling precise and robust identity verification.'
     },
     {
       icon: CarFront,
-      title: 'Smart Vehicle Integration',
-      description: 'Seamless connectivity with modern vehicle systems for intelligent monitoring and protection.'
+      title: 'Blazeface API Integration',
+      description: 'Utilizing Blazeface API with Intersection over Union (IoU) for accurate and real-time face detection.'
     },
     {
-      icon: TrendingUp,
-      title: 'Continuous Innovation',
-      description: 'Cutting-edge machine learning algorithms that adapt and improve over time.'
+      icon: Code,
+      title: 'React.js Face Comparison',
+      description: 'Leveraging React.js libraries for efficient and dynamic face comparison technologies.'
     }
   ];
 
