@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlarmCheck, Shield, CarFront, Brain, Code } from 'lucide-react';
 import InfiniteCarousel from './Carousel';
 import image1 from '../assets/images/1.jpg';
 import image2 from '../assets/images/2.jpg';
@@ -6,66 +7,108 @@ import image3 from '../assets/images/3.jpg';
 import image4 from '../assets/images/4.jpg';
 import image5 from '../assets/images/5.jpg';
 
-const TeamMember = ({ name, role, section }) => (
-  <div className="flex flex-col items-center p-6 bg-white border border-purple-300 rounded-lg shadow-md">
-    <h3 className="text-2xl font-semibold text-purple-800 mb-2">{name}</h3>
-    <p className="text-gray-700 text-lg">{role}</p>
-    <p className="text-gray-500 text-sm">{section}</p>
+// Feature Card Component
+const FeatureCard = ({ icon: Icon, title, description }) => (
+  <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 text-center">
+    <div className="mb-4 flex justify-center">
+      <Icon className="text-purple-600 w-12 h-12" />
+    </div>
+    <h3 className="text-xl font-semibold text-purple-800 mb-3">{title}</h3>
+    <p className="text-gray-600">{description}</p>
   </div>
 );
 
 const HomePage = () => {
   const screenshots = [image1, image2, image3, image4, image5];
 
-  const teamMembers = [
-    { name: 'Suyash Parganiha', role: '2130153', section: 'Electronics & Computer Science' },
-    { name: 'Subhasish Sahoo', role: '2130150', section: 'Electronics & Computer Science' },
-    { name: 'Sai Sritam Sarangi', role: '2130160', section: 'Electronics & Computer Science' },
-    { name: 'Siwen Mohapatra', role: '2130138', section: 'Electronics & Computer Science' },
+  const features = [
+    {
+      icon: Shield,
+      title: 'Advanced Security',
+      description: 'Cutting-edge face recognition technology to prevent unauthorized vehicle access.'
+    },
+    {
+      icon: Brain,
+      title: 'AI-Powered',
+      description: 'Machine learning algorithms for precise and adaptive authentication.'
+    },
+    {
+      icon: CarFront,
+      title: 'Vehicle Integration',
+      description: 'Seamless implementation with Raspberry Pi for smart vehicle protection.'
+    },
+    {
+      icon: Code,
+      title: 'Open Source',
+      description: 'Transparent and customizable solution for developers and security enthusiasts.'
+    }
   ];
 
-  const techStack = ['Raspberry Pi', 'TensorFlow.js', 'JavaScript', 'React', 'Firebase'];
-
   return (
-    <div className="bg-gray-100">
-      {/* Hero Section */}
-      <section className="py-32 bg-white">
-        <h1 className="text-4xl font-bold mb-6 text-purple-800 text-center">Anti Car Theft Using Face Recognition - Implemented Using Raspberry Pi</h1>
-        <p className="text-xl text-gray-700 mb-8 px-4 md:px-12 lg:px-24">
-          The "Anti Car Theft Using Face Recognition" project represents a significant advancement in vehicle security technology. By combining face recognition capabilities with the compact and efficient Raspberry Pi, this solution not only helps in preventing car theft incidents but also provides a seamless user experience for authorized individuals. This project stands as a testament to the potential of integrating artificial intelligence and IoT in everyday applications, making transportation safer and more secure.
-        </p>
-        <div className="text-center">
-          <a href="/face-verify" className="inline-block bg-purple-600 text-white font-semibold py-2 px-4 rounded hover:bg-purple-700 transition duration-200 no-underline">
-            Get Started ⬈
-          </a>
+    <div className="bg-gray-50">
+      {/* Hero Section with Animated Background */}
+      <section className="relative py-32 bg-gradient-to-br from-purple-600 to-indigo-700 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-pattern opacity-10"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-center leading-tight">
+            Anti Car Theft Using 
+            <span className="block text-yellow-300 mt-2">Face Recognition</span>
+          </h1>
+          <p className="text-xl text-white/90 mb-8 text-center max-w-4xl mx-auto">
+            Revolutionizing vehicle security through intelligent face recognition technology. 
+            Our innovative solution leverages Raspberry Pi and advanced machine learning 
+            to provide unparalleled protection and peace of mind.
+          </p>
+          <div className="flex justify-center space-x-4">
+            <a 
+              href="/face-verify" 
+              className="
+                inline-block bg-yellow-400 text-purple-900 
+                font-semibold py-3 px-6 rounded-full 
+                hover:bg-yellow-500 transition duration-300 
+                transform hover:-translate-y-1 shadow-lg
+                no-underline flex items-center
+              "
+            >
+              Verify Now <AlarmCheck className="ml-2" />
+            </a>
+            <a 
+              href="/project-details" 
+              className="
+                inline-block border-2 border-white 
+                text-white font-semibold py-3 px-6 
+                rounded-full hover:bg-white hover:text-purple-700 
+                transition duration-300 transform hover:-translate-y-1
+                no-underline flex items-center
+              "
+            >
+              Learn More
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold mb-12 text-center text-purple-800">
+            Project Features
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, index) => (
+              <FeatureCard key={index} {...feature} />
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Screenshots Section */}
-      <section className="py-12 bg-gray-100">
-        <h2 className="text-3xl font-bold mb-8 text-center text-purple-800">Project Screenshots</h2>
-        <div className="mx-4 md:mx-8 lg:mx-16">
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold mb-8 text-center text-purple-800">
+            Project Visualization
+          </h2>
           <InfiniteCarousel images={screenshots} />
-        </div>
-      </section>
-
-      {/* Technology Stack Section */}
-      <section className="py-12 bg-white">
-        <h2 className="text-3xl font-bold mb-8 text-center text-purple-800">Technology Stack</h2>
-        <ul className="flex justify-center space-x-6">
-          {techStack.map((tech, index) => (
-            <li key={index} className="text-lg text-purple-600">{tech}</li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Team Section */}
-      <section className="py-20 bg-gray-100">
-        <h2 className="text-3xl font-bold mb-8 text-center text-purple-800">Our Team</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4 md:px-8 lg:px-16">
-          {teamMembers.map((member, index) => (
-            <TeamMember key={index} {...member} />
-          ))}
         </div>
       </section>
     </div>
@@ -73,3 +116,16 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
+// Custom CSS for background pattern (you'd typically put this in a separate CSS file)
+const styles = `
+.bg-pattern {
+  background-image: 
+    linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), 
+    linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.1) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.1) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+`;
